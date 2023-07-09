@@ -71,8 +71,8 @@ class DailyReminder : BroadcastReceiver() {
         // Buat objek Calendar untuk mengatur waktu alarm pada pukul 6 pagi
         val calendar = Calendar.getInstance()
         calendar.apply {
-            set(Calendar.HOUR_OF_DAY, 14)
-            set(Calendar.MINUTE, 10)
+            set(Calendar.HOUR_OF_DAY, 21)
+            set(Calendar.MINUTE, 28)
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
         }

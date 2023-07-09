@@ -23,7 +23,7 @@ import com.dicoding.courseschedule.ui.setting.SettingsActivity
 import com.dicoding.courseschedule.util.DayName
 import com.dicoding.courseschedule.util.QueryType
 import com.dicoding.courseschedule.util.timeDifference
-// TODO 15 : Write UI test to validate when user tap Add Course (+) Menu, the AddCourseActivity is displayed
+
 class HomeActivity : AppCompatActivity() {
 
     private lateinit var viewModel: HomeViewModel
@@ -31,8 +31,6 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var courseAdapter: CourseAdapter
     private lateinit var dailyReminder: DailyReminder
 
-
-    // TODO 5 : Show today schedule in CardHomeView and implement menu action
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
@@ -45,7 +43,7 @@ class HomeActivity : AppCompatActivity() {
         viewModel.getQueryType().observe(this, { type ->
             queryType = type
             viewModel.getNearestSchedule(queryType).observe(this, { course ->
-                showTodaySchedule(course)
+                showNearestSchedule(course)
             })
         })
 
@@ -53,14 +51,10 @@ class HomeActivity : AppCompatActivity() {
             onCourseClick(course)
         }
 
-        viewModel.getTodaySchedule().observe(this, { courses ->
-            showTodaySchedule(courses.firstOrNull())
-            courseAdapter.submitList(courses as PagedList<Course>?)
-        })
-
-        viewModel.getNearestSchedule(queryType).observe(this, { course ->
-            showNearestSchedule(course)
-        })
+//        viewModel.getTodaySchedule().observe(this, { courses ->
+//            showTodaySchedule(courses.firstOrNull())
+//            courseAdapter.submitList(courses as PagedList<Course>?)
+//        })
 
         dailyReminder = DailyReminder()
 
@@ -78,12 +72,12 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun showNearestSchedule(course: Course?) {
+        val cardHome = findViewById<CardHomeView>(R.id.view_home)
         if (course != null) {
             val dayName = DayName.getByNumber(course.day)
             val time = String.format(getString(R.string.time_format), dayName, course.startTime, course.endTime)
             val remainingTime = timeDifference(course.day, course.startTime)
 
-            val cardHome = findViewById<CardHomeView>(R.id.view_home)
             cardHome.setCourseName(course.courseName)
             cardHome.setTime(time)
             cardHome.setRemainingTime(remainingTime)
@@ -94,33 +88,22 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun showTodaySchedule(course: Course?) {
-        checkQueryType(course)
-        course?.apply {
-            val dayName = DayName.getByNumber(day)
-            val time = String.format(getString(R.string.time_format), dayName, startTime, endTime)
-            val remainingTime = timeDifference(day, startTime)
+        val cardHome = findViewById<CardHomeView>(R.id.view_home)
+        if (course != null) {
+            val dayName = DayName.getByNumber(course.day)
+            val time = String.format(getString(R.string.time_format), dayName, course.startTime, course.endTime)
+            val remainingTime = timeDifference(course.day, course.startTime)
 
-            val cardHome = findViewById<CardHomeView>(R.id.view_home)
-            cardHome.setCourseName(courseName)
+            cardHome.setCourseName(course.courseName)
             cardHome.setTime(time)
             cardHome.setRemainingTime(remainingTime)
-            cardHome.setLecturer(lecturer)
+            cardHome.setLecturer(course.lecturer)
+        } else {
+            findViewById<TextView>(R.id.tv_empty_home).visibility = View.VISIBLE
         }
 
         findViewById<TextView>(R.id.tv_empty_home).visibility =
             if (course == null) View.VISIBLE else View.GONE
-    }
-
-    private fun checkQueryType(course: Course?) {
-        if (course == null) {
-            val newQueryType: QueryType = when (queryType) {
-                QueryType.CURRENT_DAY -> QueryType.NEXT_DAY
-                QueryType.NEXT_DAY -> QueryType.PAST_DAY
-                else -> QueryType.CURRENT_DAY
-            }
-            viewModel.setQueryType(newQueryType)
-            queryType = newQueryType
-        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -144,4 +127,3 @@ class HomeActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 }
-
