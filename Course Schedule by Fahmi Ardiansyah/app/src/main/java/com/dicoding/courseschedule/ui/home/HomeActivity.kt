@@ -58,6 +58,10 @@ class HomeActivity : AppCompatActivity() {
             courseAdapter.submitList(courses as PagedList<Course>?)
         })
 
+        viewModel.getNearestSchedule(queryType).observe(this, { course ->
+            showNearestSchedule(course)
+        })
+
         dailyReminder = DailyReminder()
 
         val btnAddCourse = findViewById<Button>(R.id.btn_add_course)
@@ -71,6 +75,22 @@ class HomeActivity : AppCompatActivity() {
         val intent = Intent(this, DetailActivity::class.java)
         intent.putExtra("course_id", course.id)
         startActivity(intent)
+    }
+
+    private fun showNearestSchedule(course: Course?) {
+        if (course != null) {
+            val dayName = DayName.getByNumber(course.day)
+            val time = String.format(getString(R.string.time_format), dayName, course.startTime, course.endTime)
+            val remainingTime = timeDifference(course.day, course.startTime)
+
+            val cardHome = findViewById<CardHomeView>(R.id.view_home)
+            cardHome.setCourseName(course.courseName)
+            cardHome.setTime(time)
+            cardHome.setRemainingTime(remainingTime)
+            cardHome.setLecturer(course.lecturer)
+        } else {
+            findViewById<TextView>(R.id.tv_empty_home).visibility = View.VISIBLE
+        }
     }
 
     private fun showTodaySchedule(course: Course?) {

@@ -60,14 +60,19 @@ class DailyReminder : BroadcastReceiver() {
 
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, DailyReminder::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT) // Add the mutability flag
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
 
 
         // Buat objek Calendar untuk mengatur waktu alarm pada pukul 6 pagi
         val calendar = Calendar.getInstance()
         calendar.apply {
-            set(Calendar.HOUR_OF_DAY, 6)
-            set(Calendar.MINUTE, 0)
+            set(Calendar.HOUR_OF_DAY, 14)
+            set(Calendar.MINUTE, 10)
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
         }
