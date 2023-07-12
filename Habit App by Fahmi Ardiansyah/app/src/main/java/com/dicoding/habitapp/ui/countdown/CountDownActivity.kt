@@ -28,14 +28,14 @@ class CountDownActivity : AppCompatActivity() {
 
         val viewModel = ViewModelProvider(this).get(CountDownViewModel::class.java)
 
-        //TODO 10 : Set initial time and observe current time. Update button state when countdown is finished
+        // TODO 10 : Set initial time and observe current time. Update button state when countdown is finished
         viewModel.setInitialTime(habit.minutesFocus)
         val tvCurrentTime = findViewById<TextView>(R.id.tv_count_down)
         viewModel.currentTimeString.observe(this) {
             tvCurrentTime.text = it
         }
 
-        //TODO 13 : Start and cancel One Time Request WorkManager to notify when time is up.
+        // TODO 13 : Start and cancel One Time Request WorkManager to notify when time is up.
         viewModel.eventCountDownFinish.observe(this) {
             updateButtonState(!it)
 
@@ -56,13 +56,25 @@ class CountDownActivity : AppCompatActivity() {
         }
 
         findViewById<Button>(R.id.btn_stop).setOnClickListener {
+            viewModel.cancelTimer()
+            updateButtonState(false)
+        }
+
+        findViewById<Button>(R.id.btn_reset).setOnClickListener {
             viewModel.resetTimer()
             updateButtonState(false)
+        }
+
+        findViewById<Button>(R.id.btn_next).setOnClickListener {
+            viewModel.nextTimer()
+            updateButtonState(true)
         }
     }
 
     private fun updateButtonState(isRunning: Boolean) {
         findViewById<Button>(R.id.btn_start).isEnabled = !isRunning
         findViewById<Button>(R.id.btn_stop).isEnabled = isRunning
+        findViewById<Button>(R.id.btn_reset).isEnabled = isRunning
+        findViewById<Button>(R.id.btn_next).isEnabled = !isRunning
     }
 }

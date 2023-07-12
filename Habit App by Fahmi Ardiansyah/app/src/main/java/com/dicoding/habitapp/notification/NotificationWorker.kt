@@ -2,13 +2,16 @@ package com.dicoding.habitapp.notification
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.dicoding.habitapp.R
+import com.dicoding.habitapp.ui.detail.DetailHabitActivity
 import com.dicoding.habitapp.utils.HABIT_ID
 import com.dicoding.habitapp.utils.HABIT_TITLE
 
@@ -30,16 +33,26 @@ class NotificationWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, p
     }
 
     private fun showNotification() {
-        // Create notification channel (for devices running Android 8.0 or above)
-        createNotificationChannel()
+        val contentText = applicationContext.getString(R.string.notify_content)
 
         // Build the notification
         val builder = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notifications)
-            .setContentTitle("Habit Reminder")
-            .setContentText("Don't forget to complete your habit: $habitTitle")
+            .setContentTitle("$habitTitle")
+            .setContentText(contentText)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
+
+        // Add pending intent to open detail habit activity
+        val intent = Intent(applicationContext, DetailHabitActivity::class.java)
+        intent.putExtra(HABIT_ID, habitId)
+        val pendingIntent = PendingIntent.getActivity(
+            applicationContext,
+            habitId,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        builder.setContentIntent(pendingIntent)
 
         // Show the notification if permission is granted
         if (checkNotificationPermission()) {
@@ -59,20 +72,7 @@ class NotificationWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, p
         }
     }
 
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "Habit Notifications"
-            val descriptionText = "Channel for habit reminders"
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
-                description = descriptionText
-            }
 
-            val notificationManager =
-                applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-        }
-    }
 
     companion object {
         private const val CHANNEL_ID = "habit_channel"

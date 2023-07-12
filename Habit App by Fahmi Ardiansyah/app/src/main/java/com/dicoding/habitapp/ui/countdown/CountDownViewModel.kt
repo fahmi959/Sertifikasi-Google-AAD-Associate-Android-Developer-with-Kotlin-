@@ -1,5 +1,6 @@
 package com.dicoding.habitapp.ui.countdown
 
+
 import android.os.CountDownTimer
 import android.text.format.DateUtils
 import androidx.lifecycle.LiveData
@@ -19,6 +20,7 @@ class CountDownViewModel : ViewModel() {
         DateUtils.formatElapsedTime(time / 1000)
     }
 
+
     // Event which triggers the end of count down
     private val _eventCountDownFinish = MutableLiveData<Boolean>()
     val eventCountDownFinish: LiveData<Boolean> = _eventCountDownFinish
@@ -36,6 +38,7 @@ class CountDownViewModel : ViewModel() {
 
             override fun onFinish() {
                 resetTimer()
+                _eventCountDownFinish.value = true
             }
         }
     }
@@ -45,10 +48,31 @@ class CountDownViewModel : ViewModel() {
     }
 
     fun resetTimer() {
-        timer?.cancel()
         currentTime.value = initialTime.value
-        _eventCountDownFinish.value = true
     }
+
+    fun nextTimer() {
+        val currentMillis = currentTime.value ?: return
+
+        timer = object : CountDownTimer(currentMillis, 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                currentTime.value = millisUntilFinished
+            }
+
+            override fun onFinish() {
+                resetTimer()
+                _eventCountDownFinish.value = true
+            }
+        }
+
+        startTimer()
+    }
+
+
+    fun cancelTimer() {
+        timer?.cancel()
+    }
+
 
     override fun onCleared() {
         super.onCleared()

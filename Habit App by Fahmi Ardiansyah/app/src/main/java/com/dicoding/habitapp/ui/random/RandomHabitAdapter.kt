@@ -21,14 +21,22 @@ class RandomHabitAdapter(
         notifyDataSetChanged()
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        PagerViewHolder(LayoutInflater.from(parent.context)
-            .inflate(R.layout.pager_item, parent, false))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PagerViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.pager_item, parent, false)
+        return PagerViewHolder(view)
+    }
+
 
     override fun onBindViewHolder(holder: PagerViewHolder, position: Int) {
         val key = getIndexKey(position) ?: return
-        val pageData = habitMap[key] ?: return
-        holder.bind(key, pageData)
+        val pageData = habitMap[key]
+
+        if (pageData != null) {
+            holder.bind(key, pageData)
+        } else {
+            holder.clear()
+        }
     }
 
     override fun getItemCount() = habitMap.size
@@ -41,7 +49,7 @@ class RandomHabitAdapter(
 
     inner class PagerViewHolder internal constructor(itemView: View) :
         RecyclerView.ViewHolder(itemView) {
-        //TODO 14 : Create view and bind data to item view
+        // TODO 14 : Create view and bind data to item view
 
         fun bind(pageType: PageType, pageData: Habit) {
             itemView.findViewById<TextView>(R.id.pager_tv_title).text = pageData.title
@@ -58,6 +66,15 @@ class RandomHabitAdapter(
                 pageData.minutesFocus.toString()
             itemView.findViewById<Button>(R.id.pager_btn_open_count_down)
                 .setOnClickListener { onClick(pageData) }
+        }
+
+        fun clear() {
+            itemView.findViewById<TextView>(R.id.pager_tv_title).text = ""
+            itemView.findViewById<TextView>(R.id.pager_tv_start_time).text = ""
+            itemView.findViewById<ImageView>(R.id.item_priority_level).setImageResource(0)
+            itemView.findViewById<TextView>(R.id.pager_tv_minutes).text = ""
+            itemView.findViewById<Button>(R.id.pager_btn_open_count_down)
+                .setOnClickListener(null)
         }
     }
 }

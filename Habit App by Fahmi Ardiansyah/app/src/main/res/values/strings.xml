@@ -11,6 +11,8 @@
     <string name="habit_deleted">Habit has been deleted</string>
     <string name="priority_level">Priority Level</string>
     <string name="minutes">minutes</string>
+    <string name="invalid_minutes_focus">Invalid minutes focus. Please enter a valid number.</string>
+
 
     <string name="title_activity_settings">Settings</string>
     <string name="title_activity_detail_habit">ScrollingActivity</string>
@@ -50,5 +52,7 @@
     <!-- Count Down-->
     <string name="start">Start</string>
     <string name="stop">Stop</string>
+    <string name="reset">Reset</string>
+    <string name="next">Next</string>
     <string name="open_count_down">Open Count Down</string>
 </resources>
