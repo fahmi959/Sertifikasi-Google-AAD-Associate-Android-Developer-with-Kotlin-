@@ -1,11 +1,14 @@
 package com.dicoding.habitapp.notification
 
+import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.Worker
@@ -35,10 +38,25 @@ class NotificationWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, p
     private fun showNotification() {
         val contentText = applicationContext.getString(R.string.notify_content)
 
+        // Create a notification channel for Android Oreo and above
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                applicationContext.getString(R.string.notify_channel_name),
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = applicationContext.getString(R.string.notify_content)
+            }
+
+            val notificationManager =
+                applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+
         // Build the notification
         val builder = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notifications)
-            .setContentTitle("$habitTitle")
+            .setContentTitle(habitTitle)
             .setContentText(contentText)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
@@ -54,25 +72,21 @@ class NotificationWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, p
         )
         builder.setContentIntent(pendingIntent)
 
-        // Show the notification if permission is granted
-        if (checkNotificationPermission()) {
-            with(NotificationManagerCompat.from(applicationContext)) {
-                notify(habitId, builder.build())
-            }
+        // Show the notification
+        val notificationManager = NotificationManagerCompat.from(applicationContext)
+        if (ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return
         }
+        notificationManager.notify(habitId, builder.build())
+
     }
-
-    private fun checkNotificationPermission(): Boolean {
-        val notificationManager =
-            applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notificationManager.areNotificationsEnabled()
-        } else {
-            NotificationManagerCompat.from(applicationContext).areNotificationsEnabled()
-        }
-    }
-
-
 
     companion object {
         private const val CHANNEL_ID = "habit_channel"
